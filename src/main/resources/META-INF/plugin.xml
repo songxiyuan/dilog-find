@@ -7,12 +7,8 @@
     <depends>com.intellij.modules.platform</depends>
 
     <extensions defaultExtensionNs="com.intellij">
-        <applicationService serviceImplementation="com.github.songxiyuan.dilogfind.services.MyApplicationService"/>
-        <projectService serviceImplementation="com.github.songxiyuan.dilogfind.services.MyProjectService"/>
+        <toolWindow id="Dilog Find" secondary="true" icon="AllIcons.General.Modified" anchor="right"
+                    factoryClass="com.github.songxiyuan.dilogfind.logListWindowFactory"/>
     </extensions>
 
-    <applicationListeners>
-        <listener class="com.github.songxiyuan.dilogfind.listeners.MyProjectManagerListener"
-                  topic="com.intellij.openapi.project.ProjectManagerListener"/>
-    </applicationListeners>
 </idea-plugin>
