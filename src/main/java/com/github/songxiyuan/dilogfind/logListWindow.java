@@ -12,70 +12,96 @@ import com.intellij.psi.search.GlobalSearchScope;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
 import java.awt.event.*;
+import java.util.List;
 import java.util.Set;
+import java.util.Vector;
 
 public class logListWindow {
 
     private JPanel logListWindowContent;
     private JTable logsTable;
-    private JTable infoTable;
     private JButton clipboardButton;
     private JButton traceButton;
     private JTextField textTrace;
+    private JLabel infoLabel;
+    private JList logInfoList;
 
     DefaultTableModel model;
     Object[] columns = {"time", "tag"};//字段
-    Position[] positions;
+    Vector<LogParser> logParsers;
     ProjectManager projectManager;
 
     public logListWindow(ToolWindow toolWindow) {
         projectManager = ProjectManager.getInstance();
         model = new DefaultTableModel(columns, 0);
         logsTable.setModel(model);
-        clipboardButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-//                SystemUtil.getTextFromClipBoard();
-                ParsingLogs(new String[]{"aaa.java", "aaa.java"});
-            }
-        });
+        clipboardButton.addActionListener(this::clipboardButtonAction);
         logsTable.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                super.mouseClicked(e);
                 int row = logsTable.getSelectedRow();
-                GotoPos(positions[row]);
+                LogParser logParser = logParsers.elementAt(row);
+                GotoPos(logParser);
+                DefaultListModel listModel = new DefaultListModel();
+                listModel.addAll(List.of(logParser.params));
+                logInfoList.setModel(listModel);
+                super.mouseClicked(e);
             }
         });
     }
 
-    public Position ParsingLog(String log) {
-        return new Position(log, 3, 4);
+    public void clipboardButtonAction(ActionEvent actionEvent) {
+        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+        Transferable content = clipboard.getContents(null);//从系统剪切板中获取数据
+        String text = null;
+        if (!content.isDataFlavorSupported(DataFlavor.stringFlavor)) {
+            return;
+        }
+        try {
+            text = (String) content.getTransferData(DataFlavor.stringFlavor);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+
+        ParsingLogs(text.split("\n"));
     }
 
-    public void ParsingLogs(String[] log) {
-        Object[][] data = new Object[log.length][2];
-        positions = new Position[log.length];
-        for (int i = 0; i < log.length; i++) {
-            positions[i] = ParsingLog(log[i]);
-            data[i][0] = positions[i].time;
-            data[i][1] = positions[i].tag;
+    public void ParsingLogs(String[] logs) {
+        logParsers = new Vector<>();
+        for (String log : logs) {
+            LogParser logParser = new LogParser(log);
+            if (logParser.file != null) {
+                logParsers.add(logParser);
+            }
+        }
+        Object[][] data = new Object[logParsers.size()][2];
+        for (int i = 0; i < logParsers.size(); i++) {
+            data[i][0] = logParsers.elementAt(i).time;
+            data[i][1] = logParsers.elementAt(i).tag;
         }
         model = new DefaultTableModel(data, columns);
         logsTable.setModel(model);
     }
 
-    public void GotoPos(Position pos) {
+    public void GotoPos(LogParser pos) {
         Project[] project = projectManager.getOpenProjects();
         Set<VirtualFile> vfSet = (Set<VirtualFile>) FilenameIndex.getVirtualFilesByName(pos.file, GlobalSearchScope.projectScope(project[0]));
         for (VirtualFile vf : vfSet) {
             String vfPath = vf.getPath();
-            if (vfPath.contains(pos.file)) {
-                new OpenFileDescriptor(project[0], vf, pos.row, pos.column).navigate(true);
-                return;
+            if (!vfPath.contains(pos.file)) {
+                continue;
             }
+            new OpenFileDescriptor(project[0], vf, pos.row, 0).navigate(true);
+            infoLabel.setText("find source success:" + pos.file);
+            return;
+
         }
+        infoLabel.setText("find file failed:" + pos.file);
     }
 
     public JPanel getContent() {
