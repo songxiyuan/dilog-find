@@ -21,7 +21,7 @@ public class LogParser {
             String[] levelTimePathRowTag = infos[0].split("]\\[");
             params = infos;
             level = levelTimePathRowTag[0].trim().substring(1);
-            time = levelTimePathRowTag[1].split("\\+")[0];
+            time = levelTimePathRowTag[1].split("\\+")[0].substring(11);
             String[] pathRowTag = levelTimePathRowTag[2].split("/");
             String[] fileRowTag = pathRowTag[pathRowTag.length - 1].split(":");
             file = fileRowTag[0];

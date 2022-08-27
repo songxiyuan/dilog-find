@@ -31,7 +31,8 @@
             <constraints/>
             <properties>
               <cellSelectionEnabled value="false"/>
-              <toolTipText value="sdfasdfasdf"/>
+              <rowSelectionAllowed value="true"/>
+              <toolTipText value=""/>
             </properties>
           </component>
         </children>
