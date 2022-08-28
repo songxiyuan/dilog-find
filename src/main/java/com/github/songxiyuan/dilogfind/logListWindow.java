@@ -10,20 +10,18 @@ import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.psi.search.FilenameIndex;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.ui.JBColor;
+import org.apache.commons.lang.StringUtils;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableColumnModel;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.*;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.Vector;
@@ -33,10 +31,10 @@ public class logListWindow {
     private JPanel logListWindowContent;
     private JTable logsTable;
     private JButton clipboardButton;
-    private JButton traceButton;
-    private JTextField textTrace;
     private JLabel infoLabel;
     private JList logInfoList;
+    private JButton down;
+    private JButton up;
 
     DefaultTableModel model;
     Object[] columns = {"time", "tag"};//字段
@@ -51,6 +49,28 @@ public class logListWindow {
         logsTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent lse) {
                 GotoLineSource();
+            }
+        });
+        up.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                int row = logsTable.getSelectedRow();
+                row--;
+                if (row < 0) {
+                    row = logParsers.size() - 1;
+                }
+                logsTable.setRowSelectionInterval(row, row);
+            }
+        });
+        down.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                int row = logsTable.getSelectedRow();
+                row++;
+                if (row >= logParsers.size()) {
+                    row = 0;
+                }
+                logsTable.setRowSelectionInterval(row, row);
             }
         });
     }
@@ -93,7 +113,7 @@ public class logListWindow {
         model = new DefaultTableModel(data, columns);
         logsTable.setModel(model);
         GotoPos(logParsers.elementAt(0));
-        logsTable.setRowSelectionInterval(0,0);
+        logsTable.setRowSelectionInterval(0, 0);
         DefaultTableCellRenderer tcr = new DefaultTableCellRenderer() {
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
                 Component cell = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
@@ -113,7 +133,7 @@ public class logListWindow {
         logParsers = new Vector<>();
         for (String log : logs) {
             LogParser logParser = new LogParser(log);
-            if (logParser.file != null) {
+            if (logParser.fileName != null) {
                 logParsers.add(logParser);
             }
         }
@@ -132,19 +152,20 @@ public class logListWindow {
             return;
         }
         for (int i = 0; i < project.length; i++) {
-            Set<VirtualFile> vfSet = (Set<VirtualFile>) FilenameIndex.getVirtualFilesByName(pos.file, GlobalSearchScope.projectScope(project[i]));
+            Set<VirtualFile> vfSet = (Set<VirtualFile>) FilenameIndex.getVirtualFilesByName(pos.fileName, GlobalSearchScope.projectScope(project[i]));
             for (VirtualFile vf : vfSet) {
                 String vfPath = vf.getPath();
-                if (!vfPath.contains(pos.file)) {
-                    continue;
+                for (int j = 0; j < pos.paths.length; j++) {
+                    String findPath = StringUtils.join(pos.paths, "/", j, pos.paths.length);
+                    if (vfPath.endsWith(findPath)) {
+                        new OpenFileDescriptor(project[i], vf, pos.row, 0).navigate(true);
+                        infoLabel.setText("find source success:" + findPath);
+                        return;
+                    }
                 }
-                new OpenFileDescriptor(project[i], vf, pos.row, 0).navigate(true);
-                infoLabel.setText("find source success:" + pos.file);
-                return;
-
             }
-            infoLabel.setText("find file failed:" + pos.file);
         }
+        infoLabel.setText("find file failed:" + pos.fileName);
     }
 
     public JPanel getContent() {
