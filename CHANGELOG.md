@@ -10,3 +10,7 @@
 
 ## [0.0.2]
 ### Finish basic function
+
+## [0.0.3]
+### Add detail info copy to clipboard
+### Same log line click will also find source

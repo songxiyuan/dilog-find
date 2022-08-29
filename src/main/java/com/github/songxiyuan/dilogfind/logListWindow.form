@@ -56,7 +56,9 @@
         <children>
           <component id="35fc8" class="javax.swing.JList" binding="logInfoList">
             <constraints/>
-            <properties/>
+            <properties>
+              <selectionMode value="0"/>
+            </properties>
           </component>
         </children>
       </scrollpane>

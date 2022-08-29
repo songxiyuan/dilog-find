@@ -20,6 +20,7 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.*;
 import java.util.Objects;
@@ -71,6 +72,29 @@ public class logListWindow {
                     row = 0;
                 }
                 logsTable.setRowSelectionInterval(row, row);
+            }
+        });
+        logInfoList.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                super.mouseClicked(e);
+                if (e.getClickCount() == 2) {
+                    Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+                    String value = logInfoList.getSelectedValue().toString();
+                    int index = value.indexOf("=");
+                    if (index >= 0) {
+                        value = value.substring(index + 1);
+                    }
+                    clipboard.setContents(new StringSelection(value), null);
+                    infoLabel.setText("value copied: " + value);
+                }
+            }
+        });
+        logsTable.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                super.mouseClicked(e);
+                GotoLineSource();
             }
         });
     }
