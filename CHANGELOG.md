@@ -14,3 +14,4 @@
 ## [0.0.3]
 ### Add detail info copy to clipboard
 ### Same log line click will also find source
+### Support php log

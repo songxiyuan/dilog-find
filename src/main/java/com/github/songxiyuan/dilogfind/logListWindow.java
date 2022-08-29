@@ -183,13 +183,13 @@ public class logListWindow {
                     String findPath = StringUtils.join(pos.paths, "/", j, pos.paths.length);
                     if (vfPath.endsWith(findPath)) {
                         new OpenFileDescriptor(project[i], vf, pos.row, 0).navigate(true);
-                        infoLabel.setText("find source success:" + findPath);
+                        infoLabel.setText("find source: " + findPath);
                         return;
                     }
                 }
             }
         }
-        infoLabel.setText("find file failed:" + pos.fileName);
+        infoLabel.setText("find failed: " + pos.fileName);
     }
 
     public JPanel getContent() {

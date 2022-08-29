@@ -27,8 +27,16 @@ public class LogParser {
             time = level_Time_PathRowTag[1].split("\\+")[0].substring(11);
             String[] pathRow_Tag = level_Time_PathRowTag[2].split("]");
             tag = pathRow_Tag[1].trim();
-            String[] path_Row = pathRow_Tag[0].split(":");
-            row = Integer.parseInt(path_Row[1]) - 1;
+            String[] path_Row = pathRow_Tag[0].split(" ");
+            if (path_Row.length>1){//php
+                if (!path_Row[1].startsWith("+")){
+                    return;
+                }
+                row = Integer.parseInt(path_Row[1].substring(1)) - 1;
+            }else{//golang
+                path_Row = pathRow_Tag[0].split(":");
+                row = Integer.parseInt(path_Row[1]) - 1;
+            }
 
             //获取path 和 name
             String[] pathsTemp = path_Row[0].split("/");
