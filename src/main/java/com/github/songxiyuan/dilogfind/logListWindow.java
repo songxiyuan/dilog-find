@@ -86,7 +86,7 @@ public class logListWindow {
                         value = value.substring(index + 1);
                     }
                     clipboard.setContents(new StringSelection(value), null);
-                    infoLabel.setText("value copied: " + value);
+                    infoLabel.setText("value copied");
                 }
             }
         });
@@ -131,7 +131,7 @@ public class logListWindow {
         }
         Object[][] data = ParsingLogs(text.split("\n"));
         if (data.length == 0) {
-            infoLabel.setText("no correct format log in clipboard");
+            infoLabel.setText("no correct log in clipboard");
             return;
         }
         model = new DefaultTableModel(data, columns);
@@ -183,7 +183,7 @@ public class logListWindow {
                     String findPath = StringUtils.join(pos.paths, "/", j, pos.paths.length);
                     if (vfPath.endsWith(findPath)) {
                         new OpenFileDescriptor(project[i], vf, pos.row, 0).navigate(true);
-                        infoLabel.setText("find source: " + findPath);
+                        infoLabel.setText("find source: " + pos.fileName);
                         return;
                     }
                 }
