@@ -23,17 +23,18 @@ public class LogParser {
             String[] infos = lineLog.split("\\|\\|");
             String[] level_Time_PathRowTag = infos[0].split("]\\[");
             params = infos;
-            level = level_Time_PathRowTag[0].trim().substring(1);
+            level_Time_PathRowTag[0] = level_Time_PathRowTag[0].trim();
+            level = level_Time_PathRowTag[0].substring(level_Time_PathRowTag[0].indexOf("[")+1);
             time = level_Time_PathRowTag[1].split("\\+")[0].substring(11);
             String[] pathRow_Tag = level_Time_PathRowTag[2].split("]");
             tag = pathRow_Tag[1].trim();
             String[] path_Row = pathRow_Tag[0].split(" ");
-            if (path_Row.length>1){//php
-                if (!path_Row[1].startsWith("+")){
+            if (path_Row.length > 1) {//php
+                if (!path_Row[1].startsWith("+")) {
                     return;
                 }
                 row = Integer.parseInt(path_Row[1].substring(1)) - 1;
-            }else{//golang
+            } else {//golang
                 path_Row = pathRow_Tag[0].split(":");
                 row = Integer.parseInt(path_Row[1]) - 1;
             }

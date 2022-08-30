@@ -36,7 +36,8 @@ public class logListWindow {
     private JList logInfoList;
     private JButton down;
     private JButton up;
-
+    private JTextArea logTextArea;
+    private JTabbedPane tabbedPane;
     DefaultTableModel model;
     Object[] columns = {"time", "tag"};//字段
     Vector<LogParser> logParsers;
@@ -55,6 +56,9 @@ public class logListWindow {
         up.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
+                if (logParsers.size() == 0) {
+                    return;
+                }
                 int row = logsTable.getSelectedRow();
                 row--;
                 if (row < 0) {
@@ -66,6 +70,9 @@ public class logListWindow {
         down.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
+                if (logParsers.size() == 0) {
+                    return;
+                }
                 int row = logsTable.getSelectedRow();
                 row++;
                 if (row >= logParsers.size()) {
@@ -86,7 +93,7 @@ public class logListWindow {
                         value = value.substring(index + 1);
                     }
                     clipboard.setContents(new StringSelection(value), null);
-                    infoLabel.setText("value copied");
+                    updateInfo("value copied: " + value);
                 }
             }
         });
@@ -97,19 +104,36 @@ public class logListWindow {
                 GotoLineSource();
             }
         });
+        tabbedPane.setSelectedIndex(0);
+    }
+
+    private void updateInfo(String str) {
+        if (str.length() > 32) {
+            str = str.substring(0, 32) + "...";
+        }
+        infoLabel.setText(str);
     }
 
     public void GotoLineSource() {
-        int row = logsTable.getSelectedRow();
-        LogParser logParser = logParsers.elementAt(row);
-        GotoPos(logParser);
-        DefaultListModel listModel = new DefaultListModel();
-        for (int i = 0; i < logParser.params.length; i++) {
-            if (!logParser.params[i].endsWith("=")) {//过滤没有参数的字段
-                listModel.addElement(logParser.params[i]);
+        try {
+            int tabIndex = tabbedPane.getSelectedIndex();
+            if (tabIndex < 0) {
+                tabbedPane.setSelectedIndex(0);
             }
+            int row = logsTable.getSelectedRow();
+            LogParser logParser = logParsers.elementAt(row);
+            GotoPos(logParser);
+            DefaultListModel listModel = new DefaultListModel();
+            for (int i = 0; i < logParser.params.length; i++) {
+                if (!logParser.params[i].endsWith("=")) {//过滤没有参数的字段
+                    listModel.addElement(logParser.params[i]);
+                }
+            }
+            logInfoList.setModel(listModel);
+            logTextArea.setText(logParser.Origin);
+        } catch (Exception ex) {
+            infoLabel.setText(ex.getMessage());
         }
-        logInfoList.setModel(listModel);
     }
 
     public void clipboardButtonAction(ActionEvent actionEvent) {
@@ -117,7 +141,7 @@ public class logListWindow {
         Transferable content = clipboard.getContents(null);//从系统剪切板中获取数据
         String text = null;
         if (!content.isDataFlavorSupported(DataFlavor.stringFlavor)) {
-            infoLabel.setText("clipboard not string");
+            updateInfo("clipboard not string");
             return;
         }
         try {
@@ -126,12 +150,12 @@ public class logListWindow {
             ex.printStackTrace();
         }
         if (Objects.equals(text, "")) {
-            infoLabel.setText("clipboard is null");
+            updateInfo("clipboard is null");
             return;
         }
         Object[][] data = ParsingLogs(text.split("\n"));
         if (data.length == 0) {
-            infoLabel.setText("no correct log in clipboard");
+            updateInfo("no correct log in clipboard");
             return;
         }
         model = new DefaultTableModel(data, columns);
@@ -172,7 +196,7 @@ public class logListWindow {
     public void GotoPos(LogParser pos) {
         Project[] project = projectManager.getOpenProjects();
         if (project.length == 0) {
-            infoLabel.setText("no project");
+            updateInfo("no project");
             return;
         }
         for (int i = 0; i < project.length; i++) {
@@ -183,16 +207,17 @@ public class logListWindow {
                     String findPath = StringUtils.join(pos.paths, "/", j, pos.paths.length);
                     if (vfPath.endsWith(findPath)) {
                         new OpenFileDescriptor(project[i], vf, pos.row, 0).navigate(true);
-                        infoLabel.setText("find source: " + pos.fileName);
+                        updateInfo("find source: " + pos.fileName);
                         return;
                     }
                 }
             }
         }
-        infoLabel.setText("find failed: " + pos.fileName);
+        updateInfo("find failed: " + pos.fileName);
     }
 
     public JPanel getContent() {
         return logListWindowContent;
     }
+
 }
