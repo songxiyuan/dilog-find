@@ -38,6 +38,7 @@ public class logListWindow {
     private JButton up;
     private JTextArea logTextArea;
     private JTabbedPane tabbedPane;
+    private JButton clearButton;
     DefaultTableModel model;
     Object[] columns = {"time", "tag"};//字段
     Vector<LogParser> logParsers;
@@ -105,6 +106,16 @@ public class logListWindow {
             }
         });
         tabbedPane.setSelectedIndex(0);
+        clearButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                Object[][] data = new Object[0][];
+                logsTable.setModel(new DefaultTableModel(data, columns));
+                logInfoList.setModel(new DefaultListModel());
+                logTextArea.setText("");
+                updateInfo("cleared");
+            }
+        });
     }
 
     private void updateInfo(String str) {
