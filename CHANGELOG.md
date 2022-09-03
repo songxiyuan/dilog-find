@@ -15,3 +15,7 @@
 ### Add detail info copy to clipboard
 ### Same log line click will also find source
 ### Support php log
+
+## [0.0.4]
+### Fix find bug
+### Add clear button

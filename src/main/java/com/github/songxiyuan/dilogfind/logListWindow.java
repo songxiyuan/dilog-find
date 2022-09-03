@@ -212,10 +212,10 @@ public class logListWindow {
         }
         for (int i = 0; i < project.length; i++) {
             Set<VirtualFile> vfSet = (Set<VirtualFile>) FilenameIndex.getVirtualFilesByName(pos.fileName, GlobalSearchScope.projectScope(project[i]));
-            for (VirtualFile vf : vfSet) {
-                String vfPath = vf.getPath();
-                for (int j = 0; j < pos.paths.length; j++) {
-                    String findPath = StringUtils.join(pos.paths, "/", j, pos.paths.length);
+            for (int j = 0; j < pos.paths.length; j++) {
+                String findPath = StringUtils.join(pos.paths, "/", j, pos.paths.length);
+                for (VirtualFile vf : vfSet) {
+                    String vfPath = vf.getPath();
                     if (vfPath.endsWith(findPath)) {
                         new OpenFileDescriptor(project[i], vf, pos.row, 0).navigate(true);
                         updateInfo("find source: " + pos.fileName);
@@ -223,6 +223,7 @@ public class logListWindow {
                     }
                 }
             }
+
         }
         updateInfo("find failed: " + pos.fileName);
     }
