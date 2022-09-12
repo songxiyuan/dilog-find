@@ -19,3 +19,6 @@
 ## [0.0.4]
 ### Fix find bug
 ### Add clear button
+
+## [0.0.5]
+### Change icon
